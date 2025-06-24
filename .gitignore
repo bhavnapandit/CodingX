@@ -34,3 +34,36 @@ coverage/
 
 # Optional: ignore compiled frontend files
 public/build/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Virtual environment
+venv/
+.env
+.env.*  # for multiple env files like .env.dev, .env.prod
+
+# VS Code
+.vscode/
+
+# Pytest
+.cache/
+.pytest_cache/
+
+# MyPy, Pylint, Coverage
+.mypy_cache/
+coverage.*
+htmlcov/
+
+# Logs
+*.log
+
+# OS-specific
+.DS_Store
+Thumbs.db
+

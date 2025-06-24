@@ -1,24 +1,18 @@
-from pydantic import BaseModel
-from typing import (
-    List,
-    Dict,
-    Optional,
-)  # importing List for list type , Dict for dictionary type and Optional for optional value
+from src.model.model import Question
 
+def individual_question(question: Question):
+    return {
+        "question": question.question,
+        "option": question.option,
+        "correctAnswer": question.correctAnswer,
+        "explanation": question.explanation,
+        "difficulty": question.difficulty,
+        "topic": question.topic,
+    }
 
-class Question(BaseModel):
-    id: int
-    question: str
-    option: List
-    correctAnswer: int
-    explanation: str
-    difficulty: str
-    topic: str
+def all_individual_data(language_doc):
+    return {
+        "language": language_doc["language"],
+        "questions": [individual_question(Question(**q)) for q in language_doc["questions"]]
+    }
 
-
-class Language(BaseModel):
-    """
-    Language model
-    The root of the model is a dictionary with languages as keys and a list of questions as values
-    """
-    questions: Dict[str, List[Question]]

@@ -1,8 +1,7 @@
 from fastapi import FastAPI
+from src.routes.route import router as main_router  # ✅ Import router
 
+app = FastAPI()
 
-
-
-if __name__ == "__main__":
-    main()  # Entry point for the script
+app.include_router(main_router)
 
