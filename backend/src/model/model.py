@@ -2,6 +2,7 @@ from pydantic import BaseModel
 from typing import List
 
 class Question(BaseModel):
+    id: int
     question: str
     option: List[str]
     correctAnswer: int

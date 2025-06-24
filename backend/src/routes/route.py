@@ -14,24 +14,32 @@ async def add_lang(new_lang: Language):
     try:
         lang_dict = new_lang.dict()
         language_name = lang_dict["language"].lower()
-        print(language_name)
         questions = lang_dict["questions"]
+
+        if language_name is None or questions is None:
+            raise HTTPException(
+                status_code=400, detail="Language name and questions are required"
+            )
 
         # Check if language already exists
         existing = collection.find_one({"language": language_name})
-        
+
         if existing:
             # Add each question to the existing language document
             collection.update_one(
                 {"language": language_name},
-                {"$push": {"questions": {"$each": questions}}}
+                {"$push": {"questions": {"$each": questions}}},
             )
-            return {"message": f"Added {len(questions)} question(s) to existing language '{language_name}'"}
+            return {
+                "message": f"Added {len(questions)} question(s) to existing language '{language_name}'"
+            }
         else:
             # Insert a new language document
             res = collection.insert_one(lang_dict)
-            return {"message": "New language created and question(s) added", "id": str(res.inserted_id)}
-
+            return {
+                "message": "New language created and question(s) added",
+                "id": str(res.inserted_id),
+            }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error: {e}")
 
@@ -40,9 +48,9 @@ async def add_lang(new_lang: Language):
 async def get_all_lang():
     try:
         # PyMongo's `find()` returns a cursor, so you need to iterate
-        data_cursor = collection.find()
+        languages = collection.find()
         data = []
-        for doc in data_cursor:
+        for doc in languages:
             doc["_id"] = str(doc["_id"])  # Convert ObjectId to string
             data.append(doc)
         return {"languages": data}
@@ -51,15 +59,53 @@ async def get_all_lang():
 
 
 @router.get("/{language}")
-async def get_questions_by_lang(language):
+async def get_questions_by_lang(language: str):
     try:
         data = collection.find({"language": language})
-        print(f"Found {data.count()} documents for language '{language}'")
+        logging.info(f"Found {data.count_documents()} documents for language '{language}'")
         questions = []
         for question in data:
             question["_id"] = str(question["_id"])
             questions.append(question)
         return {"questions": questions}
     except Exception as e:
-        print(f"Exception: {e}")
-        raise HTTPException(status_code=500, message=f"Error: {e}" )
+        logging.info(f"Exception: {e}")
+        raise HTTPException(status_code=500, detail=f"Error: {e}")
+
+
+@router.delete("/delete/{id}")
+async def delete_lang(id: str):
+    try:
+        result = collection.delete_one({"_id": ObjectId(id)})
+        if result.deleted_count == 1:
+            return {"message": "Delete successful!"}
+        else:
+            raise HTTPException(status_code=404, detail="Item not found")
+    except Exception as e:
+        logging.info(f"Exception: {e}")
+        raise HTTPException(status_code=500, detail=f"Error: {e}")
+
+
+@router.delete("/delete/{language}/{id}")
+async def delete_question(language: str, id: int):
+    try:
+        lang = collection.find_one({"language": language})
+        if lang is None:
+            raise HTTPException(status_code=404, detail="Language not found")
+
+        questions = lang["questions"]
+        questions = [q for q in questions if q["id"] != id]
+
+        collection.update_one(
+            {"language": language}, {"$set": {"questions": questions}}
+        )
+
+        return {"message": "Delete successful!"}
+    except Exception as e:
+        logging.info(f"Exception: {e}")
+        raise HTTPException(status_code=500, detail=f"Error: {e}")
+
+
+# @router.update("/update//{language}/{id}")
+# async def update_question():
+#     pass
