@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import Home from './components/Home'
+import Home from './Home'
 
 function App() {
   const [count, setCount] = useState(0)
