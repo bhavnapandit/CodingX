@@ -15,4 +15,11 @@ class Language(BaseModel):
     questions: List[Question]
 
     
-
+class User(BaseModel):
+    name:str
+    role:str
+    email:str
+    password:str
+    score:int
+    question_solved:int
+    streak:int

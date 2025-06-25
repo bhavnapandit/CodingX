@@ -9,4 +9,6 @@ client = MongoClient(uri, server_api=ServerApi('1'))
 
 db=client.languages
 collection=db["lang_ques"]
+user_collection = db["users"]
 #collection.insert_one({"hello": "world"})
+# user_collection.insert_one({"name":"bhavna"})

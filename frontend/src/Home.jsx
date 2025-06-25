@@ -8,8 +8,11 @@ import ExplanationCard from "./components/ExplanationCard";
 import StatusCard from "./components/StatusCard";
 import AchievementCard from "./components/AchienementCard";
 import TipsCard from "./components/TipsCard";
+import Loader from "./components/Loader";
 
 const Home = () => {
+  let [loading, setLoading] = useState(true);
+  let [color, setColor] = useState("#ffffff");
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [showResult, setShowResult] = useState(false);
@@ -26,10 +29,10 @@ const Home = () => {
     rank: "Advanced",
   });
 
-  const languages = ["python","javascript", "java", "c++", "react", "sql"];
+  const languages = ["python", "javascript", "java", "c++", "react", "sql"];
   const questionBank = useQuestionBank();
   const shuffleQuestions = (questions) => {
-    console.log(questions)
+    console.log(questions);
     for (let i = questions.length - 1; i > 0; i--) {
       let j = Math.floor(Math.random() * (i + 1));
       while (j === i) {
@@ -51,7 +54,7 @@ const Home = () => {
       const languageQuestions = questionBank.find(
         (lang) => lang.language === currentLanguage
       )?.questions;
-      shuffleQuestions(languageQuestions)
+      shuffleQuestions(languageQuestions);
       if (languageQuestions && languageQuestions[questionIndex]) {
         setCurrentQuestion(languageQuestions[questionIndex]);
         setSelectedAnswer(null);
@@ -121,7 +124,7 @@ const Home = () => {
   if (!currentQuestion) {
     return (
       <div className="flex items-center justify-center h-screen bg-gray-900 text-white">
-        Loading...
+        <Loader setColor={setColor} color={color} loading={loading}/>
       </div>
     );
   }
@@ -172,7 +175,7 @@ const Home = () => {
 
             <AchievementCard solvedToday={solvedToday} />
 
-            <TipsCard/>
+            <TipsCard />
           </div>
         </div>
       </div>

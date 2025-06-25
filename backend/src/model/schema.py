@@ -15,4 +15,17 @@ def all_individual_data(language_doc):
         "language": language_doc["language"],
         "questions": [individual_question(Question(**q)) for q in language_doc["questions"]]
     }
+    
+def all_users(user):
+    return{
+        "user": {
+            "name": user["name"],
+            "role": user["role"],
+            "email": user["email"],
+            "password": user["password"],
+            "score": user["score"],
+            "question_solved": user["question_solved"],
+            "streak": user["streak"],
+        }
+    }
 
