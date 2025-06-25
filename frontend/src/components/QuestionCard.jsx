@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { CheckCircle, XCircle, Target, Play, Code, Trophy, RotateCcw, Home } from "lucide-react";
-import ExplanationCard from './ExplanationCard';
 
 const QuestionCard = ({
   currentQuestion,
@@ -24,7 +23,7 @@ const QuestionCard = ({
               currentLanguage
             )}`}
           ></span>
-          <h2 className="text-xl font-bold">{currentLanguage} Quiz</h2>
+          <h2 className="text-xl font-bold">{currentLanguage.charAt(0).toUpperCase() + currentLanguage.slice(1)} Quiz</h2>
           <span
             className={`px-3 py-1 rounded-full text-sm font-medium ${getDifficultyColor(
               currentQuestion.difficulty
@@ -87,14 +86,6 @@ const QuestionCard = ({
           </button>
         ))}
       </div>
-
-      {/* Explanation */}
-      {showResult && (
-        <div className="mb-6 p-4 bg-blue-900/20 border border-blue-500/30 rounded-xl">
-          <h4 className="font-semibold text-blue-300 mb-2">Explanation:</h4>
-          <p className="text-blue-200">{currentQuestion.explanation}</p>
-        </div>
-      )}
 
       {/* Action Buttons */}
       <div className="flex space-x-4">

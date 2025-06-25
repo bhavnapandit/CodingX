@@ -2,12 +2,12 @@ import { useEffect, useState } from "react";
 import { useQuestionBank } from "./hooks/useQuestionBank";
 import { getDifficultyColor, getLanguageColor } from "./utils/helpers";
 import Header from "./components/Header";
-import LanguageProgress from "./components/LangaugeProgress";
 import LanguageSelector from "./components/LanguageSelector";
 import QuestionCard from "./components/QuestionCard";
 import ExplanationCard from "./components/ExplanationCard";
 import StatusCard from "./components/StatusCard";
 import AchievementCard from "./components/AchienementCard";
+import TipsCard from "./components/TipsCard";
 
 const Home = () => {
   const [currentQuestion, setCurrentQuestion] = useState(null);
@@ -18,6 +18,7 @@ const Home = () => {
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(7);
   const [solvedToday, setSolvedToday] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(60);
   const [userStats, setUserStats] = useState({
     totalSolved: 42,
     currentStreak: 7,
@@ -25,9 +26,21 @@ const Home = () => {
     rank: "Advanced",
   });
 
-  const languages = ["python","javascript", "java", "c++", "go", "rust"];
+  const languages = ["python","javascript", "java", "c++", "react", "sql"];
   const questionBank = useQuestionBank();
-
+  const shuffleQuestions = (questions) => {
+    console.log(questions)
+    for (let i = questions.length - 1; i > 0; i--) {
+      let j = Math.floor(Math.random() * (i + 1));
+      while (j === i) {
+        j = Math.floor(Math.random() * (i + 1));
+      }
+      const temp = questions[i];
+      questions[i] = questions[j];
+      questions[j] = temp;
+    }
+    return questions;
+  };
 
   useEffect(() => {
     loadQuestion();
@@ -35,11 +48,12 @@ const Home = () => {
 
   const loadQuestion = () => {
     if (questionBank && questionBank.length > 0) {
-      const questions = questionBank[0].questions;
-      const firstQuestion = questionBank[0].questions[0];
-      console.log(firstQuestion)
-      if (questions && questions[questionIndex]) {
-        setCurrentQuestion(questions[questionIndex]);
+      const languageQuestions = questionBank.find(
+        (lang) => lang.language === currentLanguage
+      )?.questions;
+      shuffleQuestions(languageQuestions)
+      if (languageQuestions && languageQuestions[questionIndex]) {
+        setCurrentQuestion(languageQuestions[questionIndex]);
         setSelectedAnswer(null);
         setShowResult(false);
       }
@@ -72,16 +86,33 @@ const Home = () => {
 
   const nextQuestion = () => {
     const questions = questionBank[0].questions;
-    console.log(questions)
-    console.log(questions.length)
-    if (questionIndex < questions.length - 1) {
+    if (questionIndex < Math.min(4, questions.length - 1)) {
       setQuestionIndex(questionIndex + 1);
     } else {
       setQuestionIndex(0);
     }
   };
 
+  useEffect(() => {
+    if (timeLeft === 0) {
+      submitAnswer();
+      nextQuestion();
+      return;
+    }
+
+    const timer = setInterval(() => {
+      setTimeLeft((prevTime) => prevTime - 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [timeLeft]);
+
+  useEffect(() => {
+    setTimeLeft(60);
+  }, [currentQuestion]);
+
   const changeLanguage = (language) => {
+    console.log(language);
     setCurrentLanguage(language);
     setQuestionIndex(0);
     setScore(0);
@@ -97,7 +128,7 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 text-white">
-      <Header streak={streak} userStats={userStats} score={score} />
+      <Header timeLeft={timeLeft} score={score} />
 
       <div className="max-w-7xl mx-auto px-6 py-6">
         <LanguageSelector
@@ -113,7 +144,7 @@ const Home = () => {
               currentQuestion={currentQuestion}
               currentLanguage={currentLanguage}
               questionIndex={questionIndex}
-              totalQuestions={10}
+              totalQuestions={5}
               selectedAnswer={selectedAnswer}
               showResult={showResult}
               onAnswerSelect={handleAnswerSelect}
@@ -136,15 +167,12 @@ const Home = () => {
               currentLanguage={currentLanguage}
               score={score}
               questionIndex={questionIndex}
-              totalQuestions={10}
+              totalQuestions={5}
             />
 
             <AchievementCard solvedToday={solvedToday} />
 
-            <LanguageProgress
-              languages={languages}
-              getLanguageColor={getLanguageColor}
-            />
+            <TipsCard/>
           </div>
         </div>
       </div>
