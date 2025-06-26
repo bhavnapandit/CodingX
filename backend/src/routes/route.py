@@ -57,6 +57,34 @@ async def get_all_user():
         logging.info(f"Exception: {e}")
         raise HTTPException(status_code=500, detail=f"Error: {e}")
 
+@router.get("/user/score/{email}")
+async def get_user_score(email:str):
+    try:
+        user=user_collection.find_one({"email":email})
+        if not user:
+            raise HTTPException(status_code=400, detail="User not found!")
+        score=user["score"]
+        if score is None or score < 0:
+            raise HTTPException(status_code=400,detail=f"score is {score}")
+        return {"score":score}
+    except Exception as e:
+        logging.info(f"Exception: {e}")
+        raise HTTPException(status_code=500, detail=f"Error: {e}")
+
+@router.get("/user/questions/{email}")
+async def get_questions_attempted(email:str):
+    try:
+        user=user_collection.find_one({"email":email})
+        if not user:
+            raise HTTPException(status_code=400, detail="User not found!")
+        questions=user["question_solved"]
+        if questions is None or questions < 0:
+            raise HTTPException(status_code=400,detail=f"score is {questions}")
+        return {"questions_attempted":questions}
+    except Exception as e:
+        logging.info(f"Exception: {e}")
+        raise HTTPException(status_code=500, detail=f"Error: {e}")
+
 
 @router.post("/")
 async def add_lang(new_lang: Language):
