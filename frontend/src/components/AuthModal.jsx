@@ -1,8 +1,13 @@
 import React, { useState } from "react";
-import {X, Mail, Lock, User, Eye, EyeOff, BookOpen} from 'lucide-react'
-const AuthModal = ({setIsModalOpen}) => {
+import { X, Mail, Lock, User, Eye, EyeOff, BookOpen } from "lucide-react";
+import axios from "axios";
+import { getBackendUrl } from "../utils/helpers";
+
+const AuthModal = ({ setIsModalOpen,setHasLoggedIn, SetCurrentUser }) => {
   const [showPassword, setShowPassword] = useState(false);
-   const [isLogin, setIsLogin] = useState(false);
+  const [isLogin, setIsLogin] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -15,17 +20,121 @@ const AuthModal = ({setIsModalOpen}) => {
       ...formData,
       [e.target.name]: e.target.value,
     });
+    // Clear error when user starts typing
+    if (error) setError("");
+  };
+
+  const signUp = async (userPayload) => {
+    try {
+      const url = getBackendUrl();
+      const res = await axios.post(`${url}user/signup`, userPayload);
+      setHasLoggedIn(true)
+      return res.data;
+    } catch (error) {
+      console.log(error);
+      throw error.response?.data?.message || "Signup failed. Please try again.";
+    }
+  };
+
+  const login = async (userPayload) => {
+    try {
+      console.log(userPayload);
+      const url = getBackendUrl();
+      console.log(userPayload);
+      const res = await axios.post(`${url}user/login`, userPayload);
+      setHasLoggedIn(true)
+      return res.data;
+    } catch (error) {
+      console.log(error);
+      throw (
+        error.response?.data?.message ||
+        "Login failed. Please check your credentials."
+      );
+    }
+  };
+
+  const handleSignup = async (e) => {
+    e.preventDefault();
+
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords don't match");
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      setError("Password must be at least 6 characters long");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const userPayload = {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        role: "student",
+        score: 0,
+        question_solved: 0,
+        streak: 0,
+      };
+
+      const response = await signUp(userPayload);
+      console.log("Signup successful:", response);
+      SetCurrentUser(response.user);
+      alert("Signup successful!");
+      setIsLogin(true);
+
+      setIsModalOpen(false);
+    } catch (error) {
+      setError(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    try {
+      const userPayload = {
+        email: formData.email,
+        password: formData.password,
+      };
+
+      const response = await login(userPayload);
+      console.log("Login successful:", response);
+      const msg = response.message;
+      const userStr = msg
+        .substring(msg.indexOf("{"), msg.lastIndexOf("}") + 1)
+        .replace(/ObjectId\(['"](.+?)['"]\)/g, '"$1"') // remove ObjectId()
+        .replace(/'/g, '"');
+      alert("Login successful!");
+      const user = JSON.parse(userStr);
+      SetCurrentUser(user);
+      setIsLogin(true);
+      setIsModalOpen(false);
+    } catch (error) {
+      setError(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSubmit = (e) => {
-    e.preventDefault();
-    // Handle form submission here
-    console.log("Form submitted:", formData);
-    setIsModalOpen(false);
+    if (isLogin) {
+      handleLogin(e);
+    } else {
+      handleSignup(e);
+    }
   };
 
   const toggleAuthMode = () => {
     setIsLogin(!isLogin);
+    setError("");
     setFormData({
       name: "",
       email: "",
@@ -35,12 +144,13 @@ const AuthModal = ({setIsModalOpen}) => {
   };
 
   return (
-    <div>
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="relative bg-gray-900/95 backdrop-blur-xl border border-gray-700/50 rounded-2xl p-8 w-full max-w-md mx-4 shadow-2xl">
         {/* Close Button */}
         <button
           onClick={() => setIsModalOpen(false)}
           className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+          disabled={loading}
         >
           <X className="w-6 h-6" />
         </button>
@@ -63,6 +173,13 @@ const AuthModal = ({setIsModalOpen}) => {
           </p>
         </div>
 
+        {/* Error Message */}
+        {error && (
+          <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+            <p className="text-red-400 text-sm text-center">{error}</p>
+          </div>
+        )}
+
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           {!isLogin && (
@@ -76,6 +193,7 @@ const AuthModal = ({setIsModalOpen}) => {
                 onChange={handleInputChange}
                 className="w-full pl-10 pr-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all"
                 required
+                disabled={loading}
               />
             </div>
           )}
@@ -90,6 +208,7 @@ const AuthModal = ({setIsModalOpen}) => {
               onChange={handleInputChange}
               className="w-full pl-10 pr-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all"
               required
+              disabled={loading}
             />
           </div>
 
@@ -103,11 +222,13 @@ const AuthModal = ({setIsModalOpen}) => {
               onChange={handleInputChange}
               className="w-full pl-10 pr-12 py-3 bg-gray-800/50 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all"
               required
+              disabled={loading}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+              disabled={loading}
             >
               {showPassword ? (
                 <EyeOff className="w-5 h-5" />
@@ -128,6 +249,7 @@ const AuthModal = ({setIsModalOpen}) => {
                 onChange={handleInputChange}
                 className="w-full pl-10 pr-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all"
                 required
+                disabled={loading}
               />
             </div>
           )}
@@ -135,9 +257,36 @@ const AuthModal = ({setIsModalOpen}) => {
           {/* Submit Button */}
           <button
             type="submit"
-            className="w-full py-3 bg-gradient-to-r from-purple-400 to-pink-400 text-white font-semibold rounded-lg transition-all duration-200 hover:from-purple-500 hover:to-pink-500 hover:shadow-lg transform hover:-translate-y-0.5"
+            disabled={loading}
+            className="w-full py-3 bg-gradient-to-r from-purple-400 to-pink-400 text-white font-semibold rounded-lg transition-all duration-200 hover:from-purple-500 hover:to-pink-500 hover:shadow-lg transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
           >
-            {isLogin ? "Sign In" : "Create Account"}
+            {loading ? (
+              <span className="flex items-center justify-center">
+                <svg
+                  className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                {isLogin ? "Signing In..." : "Creating Account..."}
+              </span>
+            ) : (
+              <span>{isLogin ? "Sign In" : "Create Account"}</span>
+            )}
           </button>
         </form>
 
@@ -147,7 +296,8 @@ const AuthModal = ({setIsModalOpen}) => {
             {isLogin ? "Don't have an account?" : "Already have an account?"}
             <button
               onClick={toggleAuthMode}
-              className="ml-2 text-purple-400 hover:text-purple-300 font-medium transition-colors"
+              className="ml-2 text-purple-400 hover:text-purple-300 font-medium transition-colors disabled:opacity-50"
+              disabled={loading}
             >
               {isLogin ? "Sign Up" : "Sign In"}
             </button>

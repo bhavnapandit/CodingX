@@ -6,7 +6,7 @@ const TipsCard = () => {
         {
             icon: <Code className="w-4 h-4" />,
             title: "Practice Daily",
-            description: "Consistency is key to mastering programming concepts"
+            description: "Regular practice helps solidify new concepts and signing up allows you to track your progress"
         },
         {
             icon: <Brain className="w-4 h-4" />,

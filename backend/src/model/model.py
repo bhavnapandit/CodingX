@@ -23,3 +23,7 @@ class User(BaseModel):
     score:int
     question_solved:int
     streak:int
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str

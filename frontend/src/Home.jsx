@@ -12,6 +12,7 @@ import Loader from "./components/Loader";
 
 const Home = () => {
   let [loading, setLoading] = useState(true);
+  const [hasLoggedIn, setHasLoggedIn] = useState(false);
   let [color, setColor] = useState("#ffffff");
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
@@ -21,12 +22,10 @@ const Home = () => {
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(7);
   const [solvedToday, setSolvedToday] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(60);
   const [userStats, setUserStats] = useState({
-    totalSolved: 42,
-    currentStreak: 7,
-    longestStreak: 15,
-    rank: "Advanced",
+    totalSolved: 0,
+    currentStreak: 0,
+    longestStreak: 0,
   });
 
   const languages = ["python", "javascript", "java", "c++", "react", "sql"];
@@ -47,7 +46,7 @@ const Home = () => {
 
   useEffect(() => {
     loadQuestion();
-  }, [currentLanguage, questionIndex, questionBank]);
+  }, [currentLanguage, questionIndex, questionBank,hasLoggedIn]);
 
   const loadQuestion = () => {
     if (questionBank && questionBank.length > 0) {
@@ -92,27 +91,11 @@ const Home = () => {
     if (questionIndex < Math.min(4, questions.length - 1)) {
       setQuestionIndex(questionIndex + 1);
     } else {
+      console.log(userStats.score);
+      
       setQuestionIndex(0);
     }
   };
-
-  useEffect(() => {
-    if (timeLeft === 0) {
-      submitAnswer();
-      nextQuestion();
-      return;
-    }
-
-    const timer = setInterval(() => {
-      setTimeLeft((prevTime) => prevTime - 1);
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [timeLeft]);
-
-  useEffect(() => {
-    setTimeLeft(60);
-  }, [currentQuestion]);
 
   const changeLanguage = (language) => {
     console.log(language);
@@ -131,7 +114,7 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 text-white">
-      <Header timeLeft={timeLeft} score={score} />
+      <Header score={score} userStats={userStats} setUserStats={setUserStats} setHasLoggedIn={setHasLoggedIn} hasLoggedIn={hasLoggedIn}/>
 
       <div className="max-w-7xl mx-auto px-6 py-6">
         <LanguageSelector
@@ -155,6 +138,7 @@ const Home = () => {
               onNextQuestion={nextQuestion}
               getDifficultyColor={getDifficultyColor}
               getLanguageColor={getLanguageColor}
+              hasLoggedIn={hasLoggedIn}
             />
 
             {showResult && (

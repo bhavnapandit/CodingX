@@ -24,3 +24,8 @@ export const getLanguageColor = (language) => {
   };
   return colors[language] || "bg-gray-500";
 };
+
+export const getBackendUrl=()=>{
+  const url="http://localhost:8000/"
+  return url
+}

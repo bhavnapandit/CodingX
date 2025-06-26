@@ -1,9 +1,64 @@
-import { BookOpen, Flame } from "lucide-react";
-import { useState } from "react";
+import { ArrowRight, BookOpen, Flame } from "lucide-react";
+import { useEffect, useState } from "react";
 import AuthModal from "./AuthModal";
+import axios from "axios";
+import { getBackendUrl } from "../utils/helpers";
 
-const Header = ({ timeLeft, score }) => {
+const Header = ({ setUserStats, setHasLoggedIn, hasLoggedIn }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState({});
+  const [score, setScore] = useState(0);
+  const [totalSolved, setTotalSolved] = useState(0);
+
+  useEffect(() => {
+    if (hasLoggedIn && currentUser.email) {
+      const fetchStats = async () => {
+        const scoreData = await getScore();
+        const totalSolvedData = await getNoOfSolvedQuestion();
+        
+        setScore(scoreData);
+        setTotalSolved(totalSolvedData);
+        setUserStats((prev) => ({
+          ...prev,
+          totalSolved: totalSolvedData,
+          score: scoreData,
+        }));
+      };
+      fetchStats();
+    }
+  }, [hasLoggedIn, currentUser.email]);
+
+  const getScore = async () => {
+    try {
+      const url = getBackendUrl();
+      const res = await axios.get(`${url}user/score/${currentUser.email}`);
+      
+      if (typeof res.data === 'number') return res.data;
+      if (res.data && typeof res.data === 'object') {
+        return res.data.score || res.data.total_score || 0;
+      }
+      return 0;
+    } catch (error) {
+      console.log("Error fetching score:", error);
+      return 0;
+    }
+  };
+
+  const getNoOfSolvedQuestion = async () => {
+    try {
+      const url = getBackendUrl();
+      const res = await axios.get(`${url}user/questions/${currentUser.email}`);
+      
+      if (typeof res.data === 'number') return res.data;
+      if (res.data && typeof res.data === 'object') {
+        return res.data.questions_attempted || res.data.totalSolved || res.data.count || 0;
+      }
+      return 0;
+    } catch (error) {
+      console.log("Error fetching solved questions:", error);
+      return 0;
+    }
+  };
 
   return (
     <>
@@ -24,13 +79,15 @@ const Header = ({ timeLeft, score }) => {
 
             <div className="flex items-center space-x-6">
               <div className="text-center">
-                <div className="text-2xl font-bold text-orange-400">
-                  {timeLeft}
+                <div className="text-2xl font-bold text-yellow-400">
+                  {totalSolved}
                 </div>
-                <div className="text-xs text-gray-400">Time Left</div>
+                <div className="text-xs text-gray-400">Attempted</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-green-400">{score}</div>
+                <div className="text-2xl font-bold text-green-400">
+                  {score}
+                </div>
                 <div className="text-xs text-gray-400">Score</div>
               </div>
               <div className="text-center mt-2 ml-2">
@@ -41,20 +98,12 @@ const Header = ({ timeLeft, score }) => {
                   <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse"></div>
                   <span className="relative z-10 flex items-center space-x-2">
-                    <span>Get Started</span>
-                    <svg
-                      className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M13 7l5 5m0 0l-5 5m5-5H6"
-                      />
-                    </svg>
+                    <span>
+                      {hasLoggedIn ? `${currentUser.name}` : "Get started"}
+                    </span>
+                    {hasLoggedIn && (
+                      <ArrowRight className="w-5 h-5 text-purple-400" />
+                    )}
                   </span>
                   <div className="absolute inset-0 rounded-full bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
                 </button>
@@ -64,17 +113,17 @@ const Header = ({ timeLeft, score }) => {
         </div>
       </div>
 
-      {/* Auth Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black/70 backdrop-blur-sm"
             onClick={() => setIsModalOpen(false)}
           ></div>
-
-          {/* Modal */}
-          <AuthModal setIsModalOpen={setIsModalOpen} />
+          <AuthModal
+            setIsModalOpen={setIsModalOpen}
+            SetCurrentUser={setCurrentUser}
+            setHasLoggedIn={setHasLoggedIn}
+          />
         </div>
       )}
     </>

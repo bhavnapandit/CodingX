@@ -1,10 +1,13 @@
 import logging
+
 from bson import ObjectId
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Body, HTTPException
 from src.database.mongoDB import collection, user_collection
 from src.model.model import Language, User
 from src.model.schema import all_individual_data
+from passlib.context import CryptContext
 
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 logging.basicConfig(level=logging.INFO, force=True)
 router = APIRouter()
 
@@ -17,6 +20,10 @@ async def signup(user: User):
             raise HTTPException(status_code=400, detail="User already exists!!")
         if "@" not in user.email:
             raise HTTPException(status_code=400, detail="Enter valid email id!!")
+
+        hashed_password = pwd_context.hash(user.password)
+        user.password = hashed_password
+
         new_user = user_collection.insert_one(user.model_dump())
         return {"message": f"Signup successful! {new_user}"}
     except Exception as e:
@@ -25,15 +32,17 @@ async def signup(user: User):
 
 
 @router.post("/user/login", status_code=200)
-async def login(user: User):
+async def login(
+    email: str = Body(..., embed=True), password: str = Body(..., embed=True)
+):
     try:
-        test_user = user_collection.find_one({"email": user.email})
+        test_user = user_collection.find_one({"email": email})
         if test_user is None:
             raise HTTPException(
                 status_code=404, detail="User not found! Signup first to login!"
             )
-        if user.password == test_user["password"]:
-            return {"message": f"Login successful! {user}"}
+        if password == test_user["password"]:
+            return {"message": f"Login successful! {test_user}"}
         else:
             raise HTTPException(status_code=400, detail="Enter correct password!!")
     except Exception as e:
@@ -57,30 +66,53 @@ async def get_all_user():
         logging.info(f"Exception: {e}")
         raise HTTPException(status_code=500, detail=f"Error: {e}")
 
+
 @router.get("/user/score/{email}")
-async def get_user_score(email:str):
+async def get_user_score(email: str):
     try:
-        user=user_collection.find_one({"email":email})
+        user = user_collection.find_one({"email": email})
         if not user:
             raise HTTPException(status_code=400, detail="User not found!")
-        score=user["score"]
+        score = user["score"]
         if score is None or score < 0:
-            raise HTTPException(status_code=400,detail=f"score is {score}")
-        return {"score":score}
+            raise HTTPException(status_code=400, detail=f"score is {score}")
+        return {"score": score}
     except Exception as e:
         logging.info(f"Exception: {e}")
         raise HTTPException(status_code=500, detail=f"Error: {e}")
 
-@router.get("/user/questions/{email}")
-async def get_questions_attempted(email:str):
+
+@router.put("/user/update_score")
+async def update_user_score(email: str = Body(...), new_score: int = Body(...)):
     try:
-        user=user_collection.find_one({"email":email})
+        current_user = user_collection.find_one({"email": email})
+        
+        if not current_user:
+            raise HTTPException(status_code=404, detail="User not found!")
+        result = user_collection.update_one(
+            {"email": email}, {"$set": {"score": new_score}}
+        )
+
+        if result.modified_count == 1:
+            return {"message": "Score updated successfully"}
+        else:
+            return {"message": "No changes made. Score may already be the same."}
+
+    except Exception as e:
+        logging.error(f"Exception during score update: {e}")
+        raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
+
+
+@router.get("/user/questions/{email}")
+async def get_questions_attempted(email: str):
+    try:
+        user = user_collection.find_one({"email": email})
         if not user:
             raise HTTPException(status_code=400, detail="User not found!")
-        questions=user["question_solved"]
+        questions = user["question_solved"]
         if questions is None or questions < 0:
-            raise HTTPException(status_code=400,detail=f"score is {questions}")
-        return {"questions_attempted":questions}
+            raise HTTPException(status_code=400, detail=f"score is {questions}")
+        return {"questions_attempted": questions}
     except Exception as e:
         logging.info(f"Exception: {e}")
         raise HTTPException(status_code=500, detail=f"Error: {e}")
@@ -183,8 +215,3 @@ async def delete_question(language: str, id: int):
     except Exception as e:
         logging.info(f"Exception: {e}")
         raise HTTPException(status_code=500, detail=f"Error: {e}")
-
-
-# @router.update("/update//{language}/{id}")
-# async def update_question():
-#     pass

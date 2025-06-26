@@ -13,6 +13,7 @@ const QuestionCard = ({
   onNextQuestion,
   getDifficultyColor,
   getLanguageColor,
+  setHasLoggedIn,
 }) => {
   return (
     <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
@@ -92,7 +93,7 @@ const QuestionCard = ({
         {!showResult ? (
           <button
             onClick={onSubmitAnswer}
-            disabled={selectedAnswer === null}
+            disabled={selectedAnswer === null }
             className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 disabled:from-gray-600 disabled:to-gray-700 text-white font-medium py-3 px-6 rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg hover:shadow-purple-500/25"
           >
             <Target className="w-5 h-5" />
