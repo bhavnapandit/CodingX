@@ -1,12 +1,61 @@
-from fastapi import APIRouter, HTTPException
-from src.database.mongoDB import collection ,user_collection
-from src.model.model import Language,User
-from src.model.schema import all_individual_data
-from bson import ObjectId
 import logging
+from bson import ObjectId
+from fastapi import APIRouter, HTTPException
+from src.database.mongoDB import collection, user_collection
+from src.model.model import Language, User
+from src.model.schema import all_individual_data
 
 logging.basicConfig(level=logging.INFO, force=True)
 router = APIRouter()
+
+
+@router.post("/user/signup", status_code=201)
+async def signup(user: User):
+    try:
+        existing_user = user_collection.find_one({"email": user.email})
+        if existing_user:
+            raise HTTPException(status_code=400, detail="User already exists!!")
+        if "@" not in user.email:
+            raise HTTPException(status_code=400, detail="Enter valid email id!!")
+        new_user = user_collection.insert_one(user.model_dump())
+        return {"message": f"Signup successful! {new_user}"}
+    except Exception as e:
+        logging.info(f"Exception: {e}")
+        raise HTTPException(status_code=500, detail=f"Error: {e}")
+
+
+@router.post("/user/login", status_code=200)
+async def login(user: User):
+    try:
+        test_user = user_collection.find_one({"email": user.email})
+        if test_user is None:
+            raise HTTPException(
+                status_code=404, detail="User not found! Signup first to login!"
+            )
+        if user.password == test_user["password"]:
+            return {"message": f"Login successful! {user}"}
+        else:
+            raise HTTPException(status_code=400, detail="Enter correct password!!")
+    except Exception as e:
+        logging.info(f"Exception: {e}")
+        raise HTTPException(status_code=500, detail=f"Error: {e}")
+
+
+@router.get("/users", status_code=200)
+async def get_all_user():
+    try:
+        data = user_collection.find({})
+        # logging.info(data)
+        users = []
+        for user in data:
+            user["_id"] = str(user["_id"])
+            users.append(user)
+        if not users:
+            raise HTTPException(status_code=404, detail="No users found!")
+        return {"users": users}
+    except Exception as e:
+        logging.info(f"Exception: {e}")
+        raise HTTPException(status_code=500, detail=f"Error: {e}")
 
 
 @router.post("/")
@@ -62,7 +111,9 @@ async def get_all_lang():
 async def get_questions_by_lang(language: str):
     try:
         data = collection.find({"language": language})
-        logging.info(f"Found {data.count_documents()} documents for language '{language}'")
+        # logging.info(
+        #     f"Found {data.count_documents()} documents for language '{language}'"
+        # )
         questions = []
         for question in data:
             question["_id"] = str(question["_id"])
@@ -109,32 +160,3 @@ async def delete_question(language: str, id: int):
 # @router.update("/update//{language}/{id}")
 # async def update_question():
 #     pass
-
-@router.post("/user/signup", status_code=201)
-async def signup(user: User):
-    try:
-        existing_user = user_collection.find_one({"email": user.email})
-        if existing_user:
-            raise HTTPException(status_code=400, detail="User already exists!!")
-        if "@" not in user.email:
-            raise HTTPException(status_code=400, detail="Enter valid email id!!")
-        new_user = user_collection.insert_one(user.model_dump())
-        return {"message": f"Signup successful! {new_user}"}
-    except Exception as e:
-        logging.info(f"Exception: {e}")
-        raise HTTPException(status_code=500, detail=f"Error: {e}")
-
-@router.post("/user/login", status_code=200)
-async def login(user: User):
-    try:
-        test_user = user_collection.find_one({"email": user.email})
-        if test_user is None:
-            raise HTTPException(status_code=404, detail="User not found! Signup first to login!")
-        if user.password == test_user["password"]:
-            return {"message": f"Login successful! {user}"}
-        else:
-            raise HTTPException(status_code=400, detail="Enter correct password!!")
-    except Exception as e:
-        logging.info(f"Exception: {e}")
-        raise HTTPException(status_code=500, detail=f"Error: {e}")
-
