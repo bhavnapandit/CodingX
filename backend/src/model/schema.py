@@ -24,8 +24,6 @@ def all_users(user):
             "email": user["email"],
             "password": user["password"],
             "score": user["score"],
-            "question_solved": user["question_solved"],
-            "streak": user["streak"],
         }
     }
 

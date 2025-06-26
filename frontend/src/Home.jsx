@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import { useQuestionBank } from "./hooks/useQuestionBank";
-import { getDifficultyColor, getLanguageColor } from "./utils/helpers";
+import { useScoreManager } from "./hooks/useScoreManager";
+import {
+  getDifficultyColor,
+  getLanguageColor,
+} from "./utils/helpers";
 import Header from "./components/Header";
 import LanguageSelector from "./components/LanguageSelector";
 import QuestionCard from "./components/QuestionCard";
@@ -19,45 +23,68 @@ const Home = () => {
   const [showResult, setShowResult] = useState(false);
   const [currentLanguage, setCurrentLanguage] = useState("python");
   const [questionIndex, setQuestionIndex] = useState(0);
-  const [score, setScore] = useState(0);
+  const [currentUser, setCurrentUser] = useState({});
   const [streak, setStreak] = useState(7);
   const [solvedToday, setSolvedToday] = useState(false);
   const [userStats, setUserStats] = useState({
     totalSolved: 0,
     currentStreak: 0,
     longestStreak: 0,
+    score: 0,
   });
+  const [sessionScore, setSessionScore] = useState(0);
 
   const languages = ["python", "javascript", "java", "c++", "react", "sql"];
   const questionBank = useQuestionBank();
+  const scoreManager = useScoreManager(currentUser, hasLoggedIn);
+
+  // Sync scoreManager data with userStats
+  useEffect(() => {
+    setUserStats(prev => ({
+      ...prev,
+      score: scoreManager.score,
+      totalSolved: scoreManager.totalSolved
+    }));
+  }, [scoreManager.score, scoreManager.totalSolved]);
+
+  // Fetch stats when user logs in
+  useEffect(() => {
+    if (hasLoggedIn && currentUser.email) {
+      scoreManager.refreshStats();
+    }
+  }, [hasLoggedIn, currentUser.email]);
+  
   const shuffleQuestions = (questions) => {
-    console.log(questions);
-    for (let i = questions.length - 1; i > 0; i--) {
+    const shuffled = [...questions];
+    for (let i = shuffled.length - 1; i > 0; i--) {
       let j = Math.floor(Math.random() * (i + 1));
       while (j === i) {
         j = Math.floor(Math.random() * (i + 1));
       }
-      const temp = questions[i];
-      questions[i] = questions[j];
-      questions[j] = temp;
+      const temp = shuffled[i];
+      shuffled[i] = shuffled[j];
+      shuffled[j] = temp;
     }
-    return questions;
+    return shuffled;
   };
 
   useEffect(() => {
     loadQuestion();
-  }, [currentLanguage, questionIndex, questionBank,hasLoggedIn]);
+  }, [currentLanguage, questionIndex, questionBank]);
 
   const loadQuestion = () => {
     if (questionBank && questionBank.length > 0) {
       const languageQuestions = questionBank.find(
         (lang) => lang.language === currentLanguage
       )?.questions;
-      shuffleQuestions(languageQuestions);
-      if (languageQuestions && languageQuestions[questionIndex]) {
-        setCurrentQuestion(languageQuestions[questionIndex]);
-        setSelectedAnswer(null);
-        setShowResult(false);
+      
+      if (languageQuestions) {
+        const shuffledQuestions = shuffleQuestions(languageQuestions);
+        if (shuffledQuestions[questionIndex]) {
+          setCurrentQuestion(shuffledQuestions[questionIndex]);
+          setSelectedAnswer(null);
+          setShowResult(false);
+        }
       }
     }
   };
@@ -74,7 +101,12 @@ const Home = () => {
     const isCorrect = selectedAnswer === currentQuestion.correctAnswer;
 
     if (isCorrect) {
-      setScore(score + 1);
+      setSessionScore(prev => prev + 1);
+      setUserStats((prev) => ({
+        ...prev,
+        score: prev.score + 1,
+      }));
+      
       if (!solvedToday) {
         setSolvedToday(true);
         setUserStats((prev) => ({
@@ -86,35 +118,52 @@ const Home = () => {
     }
   };
 
-  const nextQuestion = () => {
-    const questions = questionBank[0].questions;
-    if (questionIndex < Math.min(4, questions.length - 1)) {
+  const nextQuestion = async () => {
+    const languageQuestions = questionBank.find(
+      (lang) => lang.language === currentLanguage
+    )?.questions;
+    
+    if (!languageQuestions) return;
+
+    if (questionIndex < Math.min(4, languageQuestions.length - 1)) {
       setQuestionIndex(questionIndex + 1);
     } else {
-      console.log(userStats.score);
-      
+      // End of session - update score if user is logged in
+      if (hasLoggedIn && sessionScore > 0) {
+        console.log("Session complete. Final session score:", sessionScore);
+        await scoreManager.updateScore(sessionScore);
+      }
       setQuestionIndex(0);
+      setSessionScore(0);
     }
   };
 
   const changeLanguage = (language) => {
-    console.log(language);
+    console.log("Changing language to:", language);
     setCurrentLanguage(language);
     setQuestionIndex(0);
-    setScore(0);
+    setSessionScore(0);
   };
 
   if (!currentQuestion) {
     return (
       <div className="flex items-center justify-center h-screen bg-gray-900 text-white">
-        <Loader setColor={setColor} color={color} loading={loading}/>
+        <Loader setColor={setColor} color={color} loading={loading} />
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 text-white">
-      <Header score={score} userStats={userStats} setUserStats={setUserStats} setHasLoggedIn={setHasLoggedIn} hasLoggedIn={hasLoggedIn}/>
+      <Header
+        userStats={userStats}
+        setUserStats={setUserStats}
+        setHasLoggedIn={setHasLoggedIn}
+        hasLoggedIn={hasLoggedIn}
+        currentUser={currentUser}
+        setCurrentUser={setCurrentUser}
+        scoreManager={scoreManager}
+      />
 
       <div className="max-w-7xl mx-auto px-6 py-6">
         <LanguageSelector
@@ -152,7 +201,7 @@ const Home = () => {
           <div className="space-y-6">
             <StatusCard
               currentLanguage={currentLanguage}
-              score={score}
+              score={sessionScore}
               questionIndex={questionIndex}
               totalQuestions={5}
             />

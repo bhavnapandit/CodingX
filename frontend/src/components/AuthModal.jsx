@@ -82,7 +82,13 @@ const AuthModal = ({ setIsModalOpen,setHasLoggedIn, SetCurrentUser }) => {
 
       const response = await signUp(userPayload);
       console.log("Signup successful:", response);
-      SetCurrentUser(response.user);
+      const msg = response.message;
+      const userStr = msg
+        .substring(msg.indexOf("{"), msg.lastIndexOf("}") + 1)
+        .replace(/ObjectId\(['"](.+?)['"]\)/g, '"$1"') // remove ObjectId()
+        .replace(/'/g, '"');
+      const user = JSON.parse(userStr);
+      SetCurrentUser(user)
       alert("Signup successful!");
       setIsLogin(true);
 

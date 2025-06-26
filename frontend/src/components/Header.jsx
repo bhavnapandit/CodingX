@@ -1,64 +1,17 @@
 import { ArrowRight, BookOpen, Flame } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import AuthModal from "./AuthModal";
-import axios from "axios";
-import { getBackendUrl } from "../utils/helpers";
 
-const Header = ({ setUserStats, setHasLoggedIn, hasLoggedIn }) => {
+const Header = ({
+  userStats,
+  setUserStats,
+  setHasLoggedIn,
+  hasLoggedIn,
+  currentUser,
+  setCurrentUser,
+  scoreManager, // Use the scoreManager instead of individual props
+}) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState({});
-  const [score, setScore] = useState(0);
-  const [totalSolved, setTotalSolved] = useState(0);
-
-  useEffect(() => {
-    if (hasLoggedIn && currentUser.email) {
-      const fetchStats = async () => {
-        const scoreData = await getScore();
-        const totalSolvedData = await getNoOfSolvedQuestion();
-        
-        setScore(scoreData);
-        setTotalSolved(totalSolvedData);
-        setUserStats((prev) => ({
-          ...prev,
-          totalSolved: totalSolvedData,
-          score: scoreData,
-        }));
-      };
-      fetchStats();
-    }
-  }, [hasLoggedIn, currentUser.email]);
-
-  const getScore = async () => {
-    try {
-      const url = getBackendUrl();
-      const res = await axios.get(`${url}user/score/${currentUser.email}`);
-      
-      if (typeof res.data === 'number') return res.data;
-      if (res.data && typeof res.data === 'object') {
-        return res.data.score || res.data.total_score || 0;
-      }
-      return 0;
-    } catch (error) {
-      console.log("Error fetching score:", error);
-      return 0;
-    }
-  };
-
-  const getNoOfSolvedQuestion = async () => {
-    try {
-      const url = getBackendUrl();
-      const res = await axios.get(`${url}user/questions/${currentUser.email}`);
-      
-      if (typeof res.data === 'number') return res.data;
-      if (res.data && typeof res.data === 'object') {
-        return res.data.questions_attempted || res.data.totalSolved || res.data.count || 0;
-      }
-      return 0;
-    } catch (error) {
-      console.log("Error fetching solved questions:", error);
-      return 0;
-    }
-  };
 
   return (
     <>
@@ -80,13 +33,19 @@ const Header = ({ setUserStats, setHasLoggedIn, hasLoggedIn }) => {
             <div className="flex items-center space-x-6">
               <div className="text-center">
                 <div className="text-2xl font-bold text-yellow-400">
-                  {totalSolved}
+                  {hasLoggedIn ? scoreManager.score : userStats.score}
+                  {scoreManager.isLoading && (
+                    <span className="ml-1 text-sm text-gray-400">...</span>
+                  )}
                 </div>
                 <div className="text-xs text-gray-400">Attempted</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-green-400">
-                  {score}
+                  {hasLoggedIn ? scoreManager.score : userStats.score}
+                  {scoreManager.isLoading && (
+                    <span className="ml-1 text-sm text-gray-400">...</span>
+                  )}
                 </div>
                 <div className="text-xs text-gray-400">Score</div>
               </div>
