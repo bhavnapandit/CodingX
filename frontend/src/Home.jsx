@@ -1,10 +1,7 @@
 import { useEffect, useState } from "react";
 import { useQuestionBank } from "./hooks/useQuestionBank";
 import { useScoreManager } from "./hooks/useScoreManager";
-import {
-  getDifficultyColor,
-  getLanguageColor,
-} from "./utils/helpers";
+import { getDifficultyColor, getLanguageColor } from "./utils/helpers";
 import Header from "./components/Header";
 import LanguageSelector from "./components/LanguageSelector";
 import QuestionCard from "./components/QuestionCard";
@@ -13,6 +10,7 @@ import StatusCard from "./components/StatusCard";
 import AchievementCard from "./components/AchienementCard";
 import TipsCard from "./components/TipsCard";
 import Loader from "./components/Loader";
+import { Alert, Snackbar } from "@mui/material";
 
 const Home = () => {
   let [loading, setLoading] = useState(true);
@@ -32,18 +30,32 @@ const Home = () => {
     longestStreak: 0,
     score: 0,
   });
+  const [alert, setAlert] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
   const [sessionScore, setSessionScore] = useState(0);
 
   const languages = ["python", "javascript", "java", "c++", "react", "sql"];
   const questionBank = useQuestionBank();
   const scoreManager = useScoreManager(currentUser, hasLoggedIn);
 
+  // Helper function to show alerts
+  const showAlert = (severity, message) => {
+    setAlert({
+      open: true,
+      message: message,
+      severity: severity,
+    });
+  };
+
   // Sync scoreManager data with userStats
   useEffect(() => {
-    setUserStats(prev => ({
+    setUserStats((prev) => ({
       ...prev,
       score: scoreManager.score,
-      totalSolved: scoreManager.totalSolved
+      totalSolved: scoreManager.totalSolved,
     }));
   }, [scoreManager.score, scoreManager.totalSolved]);
 
@@ -53,7 +65,7 @@ const Home = () => {
       scoreManager.refreshStats();
     }
   }, [hasLoggedIn, currentUser.email]);
-  
+
   const shuffleQuestions = (questions) => {
     const shuffled = [...questions];
     for (let i = shuffled.length - 1; i > 0; i--) {
@@ -77,7 +89,7 @@ const Home = () => {
       const languageQuestions = questionBank.find(
         (lang) => lang.language === currentLanguage
       )?.questions;
-      
+
       if (languageQuestions) {
         const shuffledQuestions = shuffleQuestions(languageQuestions);
         if (shuffledQuestions[questionIndex]) {
@@ -101,12 +113,12 @@ const Home = () => {
     const isCorrect = selectedAnswer === currentQuestion.correctAnswer;
 
     if (isCorrect) {
-      setSessionScore(prev => prev + 1);
+      setSessionScore((prev) => prev + 1);
       setUserStats((prev) => ({
         ...prev,
         score: prev.score + 1,
       }));
-      
+
       if (!solvedToday) {
         setSolvedToday(true);
         setUserStats((prev) => ({
@@ -122,13 +134,14 @@ const Home = () => {
     const languageQuestions = questionBank.find(
       (lang) => lang.language === currentLanguage
     )?.questions;
-    
+
     if (!languageQuestions) return;
 
     if (questionIndex < Math.min(4, languageQuestions.length - 1)) {
       setQuestionIndex(questionIndex + 1);
     } else {
       // End of session - update score if user is logged in
+      showAlert("info", "You have fully completed the test, try the next one");
       if (hasLoggedIn && sessionScore > 0) {
         console.log("Session complete. Final session score:", sessionScore);
         await scoreManager.updateScore(sessionScore);
@@ -210,6 +223,21 @@ const Home = () => {
 
             <TipsCard />
           </div>
+          {/* Snackbar for alerts */}
+          <Snackbar
+            open={alert.open}
+            autoHideDuration={3000}
+            onClose={() => setAlert({ ...alert, open: false })}
+            anchorOrigin={{ vertical: "top", horizontal: "center" }}
+          >
+            <Alert
+              onClose={() => setAlert({ ...alert, open: false })}
+              severity={alert.severity}
+              sx={{ width: "100%" }}
+            >
+              {alert.message}
+            </Alert>
+          </Snackbar>
         </div>
       </div>
     </div>

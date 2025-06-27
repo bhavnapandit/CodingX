@@ -2,12 +2,18 @@ import React, { useState } from "react";
 import { X, Mail, Lock, User, Eye, EyeOff, BookOpen } from "lucide-react";
 import axios from "axios";
 import { getBackendUrl } from "../utils/helpers";
+import { Alert, Snackbar } from "@mui/material";
 
-const AuthModal = ({ setIsModalOpen,setHasLoggedIn, SetCurrentUser }) => {
+const AuthModal = ({ setIsModalOpen, setHasLoggedIn, SetCurrentUser }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLogin, setIsLogin] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [alert, setAlert] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -15,6 +21,7 @@ const AuthModal = ({ setIsModalOpen,setHasLoggedIn, SetCurrentUser }) => {
     confirmPassword: "",
   });
 
+  // Fixed handleInputChange function
   const handleInputChange = (e) => {
     setFormData({
       ...formData,
@@ -24,15 +31,26 @@ const AuthModal = ({ setIsModalOpen,setHasLoggedIn, SetCurrentUser }) => {
     if (error) setError("");
   };
 
+  // Helper function to show alerts
+  const showAlert = (severity, message) => {
+    setAlert({
+      open: true,
+      message: message,
+      severity: severity,
+    });
+  };
+
   const signUp = async (userPayload) => {
     try {
       const url = getBackendUrl();
       const res = await axios.post(`${url}user/signup`, userPayload);
-      setHasLoggedIn(true)
+      setHasLoggedIn(true);
       return res.data;
     } catch (error) {
-      console.log(error);
-      throw error.response?.data?.message || "Signup failed. Please try again.";
+      console.error("Signup error:", error);
+      // Show error alert
+      showAlert("error", error.response?.data?.message || "Signup failed. Please try again.");
+      throw error; // Re-throw to be handled in handleSignup
     }
   };
 
@@ -40,16 +58,14 @@ const AuthModal = ({ setIsModalOpen,setHasLoggedIn, SetCurrentUser }) => {
     try {
       console.log(userPayload);
       const url = getBackendUrl();
-      console.log(userPayload);
       const res = await axios.post(`${url}user/login`, userPayload);
-      setHasLoggedIn(true)
+      setHasLoggedIn(true);
       return res.data;
     } catch (error) {
-      console.log(error);
-      throw (
-        error.response?.data?.message ||
-        "Login failed. Please check your credentials."
-      );
+      console.error("Login error:", error);
+      // Show error alert
+      showAlert("error", error.response?.data?.message || "Login failed. Please check your credentials.");
+      throw error; // Re-throw to be handled in handleLogin
     }
   };
 
@@ -57,7 +73,7 @@ const AuthModal = ({ setIsModalOpen,setHasLoggedIn, SetCurrentUser }) => {
     e.preventDefault();
 
     if (formData.password !== formData.confirmPassword) {
-      setError("Passwords don't match");
+      setError("Password doesn't match");
       return;
     }
 
@@ -82,19 +98,26 @@ const AuthModal = ({ setIsModalOpen,setHasLoggedIn, SetCurrentUser }) => {
 
       const response = await signUp(userPayload);
       console.log("Signup successful:", response);
+      
       const msg = response.message;
       const userStr = msg
         .substring(msg.indexOf("{"), msg.lastIndexOf("}") + 1)
         .replace(/ObjectId\(['"](.+?)['"]\)/g, '"$1"') // remove ObjectId()
         .replace(/'/g, '"');
       const user = JSON.parse(userStr);
-      SetCurrentUser(user)
-      alert("Signup successful!");
-      setIsLogin(true);
-
-      setIsModalOpen(false);
+      SetCurrentUser(user);
+      
+      // Show success alert
+      showAlert("success", "Signup Successfully");
+      
+      // Close modal after a short delay to show the alert
+      setTimeout(() => {
+        setIsModalOpen(false);
+      }, 1500);
+      
     } catch (error) {
-      setError(error);
+      // Error alert is already shown in signUp function
+      console.error("Signup failed:", error);
     } finally {
       setLoading(false);
     }
@@ -113,18 +136,27 @@ const AuthModal = ({ setIsModalOpen,setHasLoggedIn, SetCurrentUser }) => {
 
       const response = await login(userPayload);
       console.log("Login successful:", response);
+      
       const msg = response.message;
       const userStr = msg
         .substring(msg.indexOf("{"), msg.lastIndexOf("}") + 1)
         .replace(/ObjectId\(['"](.+?)['"]\)/g, '"$1"') // remove ObjectId()
         .replace(/'/g, '"');
-      alert("Login successful!");
+      
       const user = JSON.parse(userStr);
       SetCurrentUser(user);
-      setIsLogin(true);
-      setIsModalOpen(false);
+      
+      // Show success alert
+      showAlert("success", "Login Successfully");
+      
+      // Close modal after a short delay to show the alert
+      setTimeout(() => {
+        setIsModalOpen(false);
+      }, 1500);
+      
     } catch (error) {
-      setError(error);
+      // Error alert is already shown in login function
+      console.error("Login failed:", error);
     } finally {
       setLoading(false);
     }
@@ -310,6 +342,22 @@ const AuthModal = ({ setIsModalOpen,setHasLoggedIn, SetCurrentUser }) => {
           </p>
         </div>
       </div>
+      
+      {/* Snackbar for alerts */}
+      <Snackbar
+        open={alert.open}
+        autoHideDuration={3000}
+        onClose={() => setAlert({ ...alert, open: false })}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setAlert({ ...alert, open: false })}
+          severity={alert.severity}
+          sx={{ width: "100%" }}
+        >
+          {alert.message}
+        </Alert>
+      </Snackbar>
     </div>
   );
 };

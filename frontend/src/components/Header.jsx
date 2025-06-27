@@ -38,7 +38,7 @@ const Header = ({
                     <span className="ml-1 text-sm text-gray-400">...</span>
                   )}
                 </div>
-                <div className="text-xs text-gray-400">Attempted</div>
+                <div className="text-xs text-gray-400">Solved</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-green-400">
