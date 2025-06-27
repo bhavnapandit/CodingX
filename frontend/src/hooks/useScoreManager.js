@@ -21,8 +21,7 @@ export const useScoreManager = (currentUser, hasLoggedIn) => {
       }
       return 0;
     } catch (error) {
-      console.log("Error fetching score:", error);
-      return 0;
+      throw new Error(error);
     }
   }, [hasLoggedIn, currentUser.email]);
 
@@ -42,7 +41,7 @@ export const useScoreManager = (currentUser, hasLoggedIn) => {
 
       setScore(scoreData);
     } catch (error) {
-      console.error("Error refreshing stats:", error);
+      throw new Error(error);
     } finally {
       setIsLoading(false);
     }
@@ -60,18 +59,12 @@ export const useScoreManager = (currentUser, hasLoggedIn) => {
         email: currentUser.email,
         new_score: newScore,
       };
-
-      console.log("Updating score:", payload);
       const res = await axios.put(`${url}user/update_score`, payload);
-      console.log("Score update response:", res.data);
-
       // Refresh stats after successful update
       await refreshStats();
-
       return true;
     } catch (error) {
-      console.error("Error updating score:", error);
-      return false;
+      throw new Error(error);
     }
   }, [hasLoggedIn, currentUser.email, refreshStats]);
 

@@ -47,24 +47,28 @@ const AuthModal = ({ setIsModalOpen, setHasLoggedIn, SetCurrentUser }) => {
       setHasLoggedIn(true);
       return res.data;
     } catch (error) {
-      console.error("Signup error:", error);
       // Show error alert
-      showAlert("error", error.response?.data?.message || "Signup failed. Please try again.");
+      showAlert(
+        "error",
+        error.response?.data?.message || "Signup failed. Please try again."
+      );
       throw error; // Re-throw to be handled in handleSignup
     }
   };
 
   const login = async (userPayload) => {
     try {
-      console.log(userPayload);
       const url = getBackendUrl();
       const res = await axios.post(`${url}user/login`, userPayload);
       setHasLoggedIn(true);
       return res.data;
     } catch (error) {
-      console.error("Login error:", error);
       // Show error alert
-      showAlert("error", error.response?.data?.message || "Login failed. Please check your credentials.");
+      showAlert(
+        "error",
+        error.response?.data?.message ||
+          "Login failed. Please check your credentials."
+      );
       throw error; // Re-throw to be handled in handleLogin
     }
   };
@@ -97,8 +101,7 @@ const AuthModal = ({ setIsModalOpen, setHasLoggedIn, SetCurrentUser }) => {
       };
 
       const response = await signUp(userPayload);
-      console.log("Signup successful:", response);
-      
+
       const msg = response.message;
       const userStr = msg
         .substring(msg.indexOf("{"), msg.lastIndexOf("}") + 1)
@@ -106,18 +109,16 @@ const AuthModal = ({ setIsModalOpen, setHasLoggedIn, SetCurrentUser }) => {
         .replace(/'/g, '"');
       const user = JSON.parse(userStr);
       SetCurrentUser(user);
-      
+
       // Show success alert
       showAlert("success", "Signup Successfully");
-      
+
       // Close modal after a short delay to show the alert
       setTimeout(() => {
         setIsModalOpen(false);
       }, 1500);
-      
     } catch (error) {
       // Error alert is already shown in signUp function
-      console.error("Signup failed:", error);
     } finally {
       setLoading(false);
     }
@@ -135,28 +136,25 @@ const AuthModal = ({ setIsModalOpen, setHasLoggedIn, SetCurrentUser }) => {
       };
 
       const response = await login(userPayload);
-      console.log("Login successful:", response);
-      
       const msg = response.message;
       const userStr = msg
         .substring(msg.indexOf("{"), msg.lastIndexOf("}") + 1)
         .replace(/ObjectId\(['"](.+?)['"]\)/g, '"$1"') // remove ObjectId()
         .replace(/'/g, '"');
-      
+
       const user = JSON.parse(userStr);
       SetCurrentUser(user);
-      
+
       // Show success alert
       showAlert("success", "Login Successfully");
-      
+
       // Close modal after a short delay to show the alert
       setTimeout(() => {
         setIsModalOpen(false);
       }, 1500);
-      
     } catch (error) {
       // Error alert is already shown in login function
-      console.error("Login failed:", error);
+        showAlert("error", `Unexpected error ${error}`);
     } finally {
       setLoading(false);
     }
@@ -342,7 +340,7 @@ const AuthModal = ({ setIsModalOpen, setHasLoggedIn, SetCurrentUser }) => {
           </p>
         </div>
       </div>
-      
+
       {/* Snackbar for alerts */}
       <Snackbar
         open={alert.open}

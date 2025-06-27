@@ -14,7 +14,7 @@ export const useQuestionBank = () => {
             setIsLoaded(true);
             return questionBank;
         } catch (err) {
-            console.log(err);
+          throw new Error(err);
         }
     };
     useEffect(() => {

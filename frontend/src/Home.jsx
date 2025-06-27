@@ -143,7 +143,6 @@ const Home = () => {
       // End of session - update score if user is logged in
       showAlert("info", "You have fully completed the test, try the next one");
       if (hasLoggedIn && sessionScore > 0) {
-        console.log("Session complete. Final session score:", sessionScore);
         await scoreManager.updateScore(sessionScore);
       }
       setQuestionIndex(0);
@@ -152,7 +151,6 @@ const Home = () => {
   };
 
   const changeLanguage = (language) => {
-    console.log("Changing language to:", language);
     setCurrentLanguage(language);
     setQuestionIndex(0);
     setSessionScore(0);
