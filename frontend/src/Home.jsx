@@ -156,13 +156,13 @@ const Home = () => {
     setSessionScore(0);
   };
 
-  if (!currentQuestion) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-gray-900 text-white">
-        <Loader setColor={setColor} color={color} loading={loading} />
-      </div>
-    );
-  }
+  // if (!currentQuestion) {
+  //   return (
+  //     <div className="flex items-center justify-center h-screen bg-gray-900 text-white">
+  //       <Loader setColor={setColor} color={color} loading={loading} />
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 text-white">
