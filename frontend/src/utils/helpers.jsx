@@ -26,6 +26,6 @@ export const getLanguageColor = (language) => {
 };
 
 export const getBackendUrl=()=>{
-  const url="http://localhost:8000/"
+  const url="https://codingx-backend.onrender.com/"
   return url
 }
