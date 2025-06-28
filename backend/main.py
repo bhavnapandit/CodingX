@@ -1,17 +1,19 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from src.routes.route import router as main_router  # ✅ Import router
+from src.routes.route import router as main_router
 
 app = FastAPI()
 
-# ✅ Correct CORS middleware setup (before including routers)
+# CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://coding-x.vercel.app"],  # ✅ Frontend domain
+    allow_origins=["https://coding-x.vercel.app", "http://localhost:3000"],  # Add localhost for development
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],  # Explicitly include OPTIONS
     allow_headers=["*"],
+    expose_headers=["*"]
 )
+
 
 @app.get("/")
 def root():
