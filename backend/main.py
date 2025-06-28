@@ -1,22 +1,17 @@
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 from src.routes.route import router as main_router  # ✅ Import router
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
-# ✅ Correct CORS middleware setup (before including routers)
+# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://coding-x.vercel.app"],  # ✅ Frontend domain
+    allow_origins=["https://coding-x.vercel.app"],  # Vite's default port
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-@app.get("/")
-def root():
-    return {"message": "API is working!"}
-
-# ✅ Include router
 app.include_router(main_router)
 
