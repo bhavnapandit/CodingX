@@ -5,7 +5,6 @@ pydantic
 pydantic-settings
 pymongo[srv]
 python-dotenv
-typing
 uvicorn
 certifi
 bcrypt
