@@ -9,3 +9,4 @@ typing>=3.10.0.0
 uvicorn>=0.34.3
 certifi>=2023.11.22
 bcrypt
+mangum
