@@ -9,3 +9,5 @@ uvicorn
 certifi
 bcrypt
 mangum
+passlib[bcrypt]
+
