@@ -8,8 +8,8 @@ export const useQuestionBank = () => {
 
     const fetchData = async () => {
         try {
-            
-            const res = await axios.get('http://localhost:8000/');
+            const url = getBackendUrl();
+            const res = await axios.get(`${url}`);
             setQuestionBank(res.data.languages);
             setIsLoaded(true);
             return questionBank;
