@@ -49,10 +49,10 @@ const Header = ({
               <div className="text-center mt-2 ml-2">
                 <button
                   onClick={() => setIsModalOpen(true)}
-                  className="group relative px-6 py-2.5 bg-gradient-to-r from-purple-500 via-pink-500 to-purple-600 text-white font-semibold rounded-full overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/25 hover:scale-105 active:scale-95"
+                  className="group relative px-4 py-2 bg-gradient-to-r from-purple-500 via-pink-500 to-purple-600 text-white font-semibold rounded-full overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/25 hover:scale-105 active:scale-95 lg:px-6 lg:py-2.5"
                   style={{
-                    fontSize: "clamp(1rem, 2vw, 1.5rem)",
-                    padding: "clamp(0.5rem, 2vw, 1.5rem)",
+                    fontSize: "clamp(0.875rem, 1.5vw, 1.25rem)",
+                    padding: "clamp(0.4rem, 1.5vw, 1.2rem)",
                   }}
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -62,7 +62,7 @@ const Header = ({
                       {hasLoggedIn ? `${currentUser.name}` : "Get started"}
                     </span>
                     {hasLoggedIn && (
-                      <ArrowRight className="w-5 h-5 text-purple-400" />
+                      <ArrowRight className="w-4 h-4 lg:w-5 lg:h-5 text-purple-400" />
                     )}
                   </span>
                   <div className="absolute inset-0 rounded-full bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
