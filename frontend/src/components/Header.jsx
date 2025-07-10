@@ -29,22 +29,22 @@ const Header = ({
 
             <div className="flex items-center space-x-6">
               <div className="text-center">
-                <div className="text-2xl font-bold text-yellow-400">
+                <div className="text-base sm:text-2xl font-bold text-yellow-400">
                   {hasLoggedIn ? scoreManager.score : userStats.score}
                   {scoreManager.isLoading && (
-                    <span className="ml-1 text-sm text-gray-400">...</span>
+                    <span className="ml-1 text-sm sm:text-base text-gray-400">...</span>
                   )}
                 </div>
-                <div className="text-xs text-gray-400">Solved</div>
+                <div className="text-xs sm:text-sm text-gray-400">Solved</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-green-400">
+                <div className="text-base sm:text-2xl font-bold text-green-400">
                   {hasLoggedIn ? scoreManager.score : userStats.score}
                   {scoreManager.isLoading && (
-                    <span className="ml-1 text-sm text-gray-400">...</span>
+                    <span className="ml-1 text-sm sm:text-base text-gray-400">...</span>
                   )}
                 </div>
-                <div className="text-xs text-gray-400">Score</div>
+                <div className="text-xs sm:text-sm text-gray-400">Score</div>
               </div>
               <div className="text-center mt-2 ml-2">
                 <button
