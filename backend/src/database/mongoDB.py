@@ -7,7 +7,7 @@ load_dotenv()
 import os
 
 MONGO_URI = os.getenv("MONGO_URI")
-print("MONGO_URI:", MONGO_URI)
+# print("MONGO_URI:", MONGO_URI)
 
 
 # Create a new client and connect to the server
