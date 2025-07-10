@@ -66,19 +66,15 @@ const Home = () => {
     }
   }, [hasLoggedIn, currentUser.email]);
 
-  const shuffleQuestions = (questions) => {
-    const shuffled = [...questions];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      let j = Math.floor(Math.random() * (i + 1));
-      while (j === i) {
-        j = Math.floor(Math.random() * (i + 1));
-      }
-      const temp = shuffled[i];
-      shuffled[i] = shuffled[j];
-      shuffled[j] = temp;
-    }
-    return shuffled;
-  };
+const shuffleQuestions = (questions) => {
+  const shuffled = [...questions];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    // Swap elements at positions i and j
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
 
   useEffect(() => {
     loadQuestion();
