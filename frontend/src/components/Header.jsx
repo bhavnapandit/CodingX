@@ -49,14 +49,13 @@ const Header = ({
               <div className="text-center mt-2 ml-2">
                 <button
                   onClick={() => setIsModalOpen(true)}
-                  className="group relative px-4 py-2 bg-gradient-to-r from-purple-500 via-pink-500 to-purple-600 text-white font-semibold rounded-full overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/25 hover:scale-105 active:scale-95 lg:px-4 lg:py-2"
+                  className="group relative px-4 py-2 bg-gradient-to-r from-purple-500 via-pink-500 to-purple-600 text-white font-semibold rounded-full overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/25 hover:scale-105 active:scale-95 lg:px-3 lg:py-1"
                   style={{
                     fontSize: "clamp(0.875rem, 1.5vw, 1.25rem)",
                     padding: "clamp(0.4rem, 1.5vw, 1.2rem)",
                   }}
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse"></div>
                   <span className="relative z-10 flex items-center space-x-2">
                     <span>
                       {hasLoggedIn ? `${currentUser.name}` : "Get started"}
