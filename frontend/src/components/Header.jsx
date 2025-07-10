@@ -49,7 +49,7 @@ const Header = ({
               <div className="text-center mt-2 ml-2">
                 <button
                   onClick={() => setIsModalOpen(true)}
-                  className="group relative px-4 py-2 bg-gradient-to-r from-purple-500 via-pink-500 to-purple-600 text-white font-semibold rounded-full overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/25 hover:scale-105 active:scale-95 lg:px-6 lg:py-2.5"
+                  className="group relative px-4 py-2 bg-gradient-to-r from-purple-500 via-pink-500 to-purple-600 text-white font-semibold rounded-full overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/25 hover:scale-105 active:scale-95 lg:px-4 lg:py-2"
                   style={{
                     fontSize: "clamp(0.875rem, 1.5vw, 1.25rem)",
                     padding: "clamp(0.4rem, 1.5vw, 1.2rem)",
